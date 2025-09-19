@@ -17,7 +17,7 @@ public class PostRepository(IMySqlConnectionFactory connectionFactory, IDapperEx
         return result;
     }
 
-    public async Task<int> AddAsync(Post post)
+    public async Task<long> AddAsync(Post post)
     {
         var parameters = new
         {
@@ -27,7 +27,7 @@ public class PostRepository(IMySqlConnectionFactory connectionFactory, IDapperEx
             post.Content,
         };
 
-        var newPostId = await ExecuteScalarAsync<int>(nameof(_insertPostQuery), _insertPostQuery, parameters);
+        var newPostId = await ExecuteScalarAsync<long>(nameof(_insertPostQuery), _insertPostQuery, parameters);
         return newPostId;
     }
 
