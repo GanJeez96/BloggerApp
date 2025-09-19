@@ -1,0 +1,40 @@
+services:
+  blogger-app-mysql:
+    image: mysql:8.0
+    container_name: blogger-app-mysql
+    volumes:
+      - mysql_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+    networks:
+      - privatenetwork
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      timeout: 20s
+      retries: 10
+    environment:
+      MYSQL_ROOT_PASSWORD: secretpassword
+      MYSQL_DATABASE: bloggerappdb
+      MYSQL_USER: app_user
+      MYSQL_PASSWORD: secretpassword
+    command: >
+      --character-set-server=utf8mb4
+      --collation-server=utf8mb4_0900_ai_ci
+      --log-bin-trust-function-creators=1
+  blogger-app-flyway:
+    container_name: blogger-app-flyway
+    image: flyway/flyway:latest
+    command: -url=jdbc:mysql://blogger-app-mysql/bloggerappdb?allowPublicKeyRetrieval=true -user=app_user -password=secretpassword migrate
+    volumes:
+      - ./migrations:/flyway/migrations
+      - ./:/flyway/conf
+    networks:
+      - privatenetwork
+    depends_on:
+      blogger-app-mysql:
+        condition: service_healthy
+networks:
+  privatenetwork:
+    name: blogger-app-network
+volumes:
+  mysql_data:
