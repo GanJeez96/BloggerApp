@@ -3,8 +3,6 @@ using FluentAssertions;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Dapper;
 using Moq;
-using Xunit;
-using Assert = Xunit.Assert;
 
 namespace BloggerApp.Tests.Unit.Infrastructure.Persistence.Tests;
 
