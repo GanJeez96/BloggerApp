@@ -4,14 +4,16 @@ using Application.Validators;
 using Domain.Repositories;
 using FluentValidation;
 using Infrastructure.Persistence;
+using Infrastructure.Persistence.Dapper;
 using MediatR;
 using WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Setup MySql
+builder.Services.AddScoped<IDapperExecutor, DapperExecutor>();
 var connectionString = builder.Configuration.GetConnectionString("MySql");
-builder.Services.AddScoped<MySqlConnectionFactory>(_ => new MySqlConnectionFactory(connectionString));
+builder.Services.AddScoped<IMySqlConnectionFactory>(_ => new MySqlConnectionFactory(connectionString));
 
 
 // Register Swagger services

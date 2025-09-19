@@ -1,15 +1,15 @@
-using Dapper;
+using Infrastructure.Persistence.Dapper;
 
 namespace Infrastructure.Persistence;
 
-public abstract class BaseRepository(MySqlConnectionFactory connectionFactory)
+public abstract class BaseRepository(IMySqlConnectionFactory connectionFactory, IDapperExecutor dapper)
 {
     protected async Task<T?> QuerySingleOrDefaultAsync<T>(string queryDescription, string sql, object param = null)
     {
         try
         {
             using var connection = connectionFactory.CreateConnection();
-            return await connection.QuerySingleOrDefaultAsync<T>(sql, param);
+            return await dapper.QuerySingleOrDefaultAsync<T>(connection, sql, param);
         }
         catch (Exception e)
         {
@@ -23,7 +23,7 @@ public abstract class BaseRepository(MySqlConnectionFactory connectionFactory)
         try
         {
             using var connection = connectionFactory.CreateConnection();
-            return await connection.ExecuteScalarAsync<T>(sql, param);
+            return await dapper.ExecuteScalarAsync<T>(connection, sql, param);
         }
         catch (Exception e)
         {

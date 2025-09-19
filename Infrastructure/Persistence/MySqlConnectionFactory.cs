@@ -3,7 +3,7 @@ using MySql.Data.MySqlClient;
 
 namespace Infrastructure.Persistence;
 
-public class MySqlConnectionFactory(string connectionString)
+public class MySqlConnectionFactory(string connectionString) : IMySqlConnectionFactory
 {
     public IDbConnection CreateConnection() => new MySqlConnection(connectionString);
 }
