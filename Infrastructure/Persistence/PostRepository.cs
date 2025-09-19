@@ -1,9 +1,10 @@
 using Domain.Entities;
 using Domain.Repositories;
+using Infrastructure.Persistence.Dapper;
 
 namespace Infrastructure.Persistence;
 
-public class PostRepository(MySqlConnectionFactory connectionFactory) : BaseRepository(connectionFactory), IPostRepository
+public class PostRepository(IMySqlConnectionFactory connectionFactory, IDapperExecutor dapper) : BaseRepository(connectionFactory, dapper), IPostRepository
 {
     public async Task<Post?> GetByIdAsync(long id)
     {
