@@ -17,9 +17,12 @@ public class PostController(IMediator mediator) : ControllerBase
     }
     
     [HttpGet("{id}")]
-    public async Task<IActionResult> GetById(long id)
+    public async Task<IActionResult> GetById(long id, [FromQuery] bool includeAuthor = false)
     {
-        var post = await mediator.Send(new GetPostByIdQuery(id));
+        if(id < 1)
+            return BadRequest("Post Id is invalid");
+        
+        var post = await mediator.Send(new GetPostByIdQuery(id, includeAuthor));
         
         if (post == null) 
             return NotFound();
