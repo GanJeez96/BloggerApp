@@ -29,6 +29,7 @@ builder.Services.AddMediatR(cfg =>
 
 // Inject Repositories
 builder.Services.AddScoped<IPostRepository, PostRepository>();
+builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 
 // Inject FluentValidation
 builder.Services.AddValidatorsFromAssemblyContaining<CreatePostCommandValidator>();
