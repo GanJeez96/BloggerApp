@@ -13,15 +13,15 @@ public class GetPostByIdQueryHandler(IPostRepository postRepository, IAuthorRepo
 
         if (post is null)
             return null;
+        
+        var postResult = new PostDto{ Id = post.Id, Title = post.Title, Description = post.Description, Content = post.Content};
 
-        AuthorDto? authorDto = null;
-
-        if(!request.IncludeAuthor)
-            return new PostDto(post.Id, post.Title, post.Description, post.Content, authorDto);
+        if (!request.IncludeAuthor)
+            return postResult;
 
         var author = await authorRepository.GetByIdAsync(post.AuthorId); 
-        authorDto = new AuthorDto(author.Id, author.Name, author.Surname);
+        postResult.Author = new AuthorDto{ Id = author.Id, Name = author.Name, Surname = author.Surname};
 
-        return new PostDto(post.Id, post.Title, post.Description, post.Content, authorDto);
+        return postResult;
     }
 }

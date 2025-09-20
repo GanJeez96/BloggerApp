@@ -35,7 +35,7 @@ builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreatePostCommandValidator>();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
-builder.Services.AddControllers();
+builder.Services.AddControllers().AddXmlSerializerFormatters(); 
 
 var app = builder.Build();
 

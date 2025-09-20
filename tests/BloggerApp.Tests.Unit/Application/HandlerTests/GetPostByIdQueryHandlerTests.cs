@@ -3,6 +3,7 @@ using Application.Handlers;
 using Application.Queries;
 using Domain.Entities;
 using Domain.Repositories;
+using FluentAssertions;
 using Moq;
 
 namespace BloggerApp.Tests.Unit.Application.HandlerTests;
@@ -48,8 +49,9 @@ public class GetPostByIdQueryHandlerTests
     
         var result = await _handler.Handle(query, CancellationToken.None);
     
-        var expected = new PostDto(post.Id, post.Title, post.Description, post.Content, null);
-        Assert.Equal(expected, result);
+        var expected = new PostDto{ Id = post.Id, Title = post.Title, Description = post.Description, Content = post.Content, Author = null};
+        
+        result.Should().BeEquivalentTo(expected);
         
         _postRepositoryMock.Verify(r => r.GetByIdAsync(It.IsAny<long>()), Times.Once);
         _authorRepositoryMock.Verify(r => r.GetByIdAsync(It.IsAny<long>()), Times.Never);
@@ -70,10 +72,10 @@ public class GetPostByIdQueryHandlerTests
     
         var result = await _handler.Handle(query, CancellationToken.None);
     
-        var expectedAuthorDto = new AuthorDto(author.Id, author.Name, author.Surname);
-        var expected = new PostDto(post.Id, post.Title, post.Description, post.Content, expectedAuthorDto);
+        var expectedAuthorDto = new AuthorDto{Id = author.Id, Name = author.Name, Surname = author.Surname};
+        var expected = new PostDto{ Id = post.Id, Title = post.Title, Description = post.Description, Content = post.Content, Author = expectedAuthorDto};
         
-        Assert.Equal(expected, result);
+        result.Should().BeEquivalentTo(expected);
         
         _postRepositoryMock.Verify(r => r.GetByIdAsync(It.IsAny<long>()), Times.Once);
         _authorRepositoryMock.Verify(r => r.GetByIdAsync(It.IsAny<long>()), Times.Once);
