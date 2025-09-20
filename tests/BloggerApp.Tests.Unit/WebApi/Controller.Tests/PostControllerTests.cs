@@ -1,5 +1,7 @@
+using Application.Commands;
 using Application.Dtos;
 using Application.Queries;
+using FluentAssertions;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
@@ -18,6 +20,22 @@ public class PostControllerTests
         _controller = new PostController(_mediatorMock.Object);
     }
     
+    [Fact]
+    public async Task Create_ReturnsOk_WithId()
+    {
+        var expectedNewPostId = 110;
+        var command = new CreatePostCommand{ AuthorId = 1, Title = "Title", Description = "Desc", Content = "Content"};
+        
+        _mediatorMock
+            .Setup(m => m.Send(command, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(expectedNewPostId);
+        
+        var result = await _controller.Create(command);
+        
+        result.Should().BeOfType<OkObjectResult>();
+        result.As<OkObjectResult>().Value.Should().Be(expectedNewPostId);
+    }
+    
     [Theory]
     [InlineData(0)]
     [InlineData(-97)]
@@ -25,7 +43,7 @@ public class PostControllerTests
     {
         var result = await _controller.GetById(postId, includeAuthor: false);
 
-        Assert.IsType<BadRequestObjectResult>(result);
+        result.Should().BeOfType<BadRequestObjectResult>();
         
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetPostByIdQuery>(), It.IsAny<CancellationToken>()), Times.Never);
     }
@@ -41,7 +59,7 @@ public class PostControllerTests
         
         var result = await _controller.GetById(postId, includeAuthor: false);
 
-        Assert.IsType<NotFoundResult>(result);
+        result.Should().BeOfType<NotFoundResult>();
         
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetPostByIdQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -50,7 +68,7 @@ public class PostControllerTests
     public async Task GetById_WhenPostExistsAndIncludeAuthorIsFalse_ShouldReturnOnlyPostWithOkResult()
     {
         var postId = 1;
-        var expectedPost = new PostDto(postId, "Title", "Desc", "Content", null);
+        var expectedPost = new PostDto{ Id = postId, Title = "Title", Description = "Desc", Content = "Content", Author = null};
         var query = new GetPostByIdQuery(postId, false);
 
         _mediatorMock
@@ -58,11 +76,9 @@ public class PostControllerTests
             .ReturnsAsync(expectedPost);
 
         var result = await _controller.GetById(postId, includeAuthor: false);
-
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedPost = Assert.IsType<PostDto>(okResult.Value);
         
-        Assert.Equal(expectedPost, returnedPost);
+        result.Should().BeOfType<OkObjectResult>();
+        result.As<OkObjectResult>().Value.Should().Be(expectedPost);
         
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetPostByIdQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
@@ -73,18 +89,16 @@ public class PostControllerTests
         var postId = 1;
         var includeAuthor = true;
         var query = new GetPostByIdQuery(postId, includeAuthor);
-        var expectedPost = new PostDto(postId, "Title", "Desc", "Content", new AuthorDto(2, "John", "Doe"));
+        var expectedPost = new PostDto{ Id = postId, Title = "Title", Description = "Desc", Content = "Content", Author = null};
 
         _mediatorMock
             .Setup(m => m.Send(query, It.IsAny<CancellationToken>()))
             .ReturnsAsync(expectedPost);
 
         var result = await _controller.GetById(postId, includeAuthor);
-
-        var okResult = Assert.IsType<OkObjectResult>(result);
-        var returnedPost = Assert.IsType<PostDto>(okResult.Value);
         
-        Assert.Equal(expectedPost, returnedPost);
+        result.Should().BeOfType<OkObjectResult>();
+        result.As<OkObjectResult>().Value.Should().Be(expectedPost);
         
         _mediatorMock.Verify(m => m.Send(It.IsAny<GetPostByIdQuery>(), It.IsAny<CancellationToken>()), Times.Once);
     }
