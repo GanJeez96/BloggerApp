@@ -47,4 +47,31 @@ public class AuthorRepositoryTests
             It.Is<object>(p => TestHelpers.HasParameter(p, "Id", expectedAuthor.Id))
         ), Times.Once);
     }
+    
+    [Fact]
+    public async Task AddAsync_ShouldUseCorrectSql()
+    {
+        var expectedNewAuthorId = 123L;
+        var newAuthorRequest = new Author {Name = "Test-User", Surname = "Test-Surname" };
+        var sql = @"INSERT INTO Authors (Name, Surname) VALUES (@Name, @Surname); SELECT LAST_INSERT_ID();";
+        
+        _mockConnectionFactory.Setup(f => f.CreateConnection()).Returns(_mockDbConnection.Object);
+        _mockDapperExecutor.Setup(d => d.ExecuteScalarAsync<long>(
+            _mockDbConnection.Object,
+            sql,
+            It.IsAny<object>()
+        )).ReturnsAsync(expectedNewAuthorId);
+
+        var result = await _sut.AddAsync(newAuthorRequest);
+
+        Assert.Equal(expectedNewAuthorId, result);
+        
+        _mockDapperExecutor.Verify(d => d.ExecuteScalarAsync<long>(
+            _mockDbConnection.Object,
+            sql,
+            It.Is<object>(p => TestHelpers.HasParameter(p, "Name", newAuthorRequest.Name)
+                               && TestHelpers.HasParameter(p, "Surname", newAuthorRequest.Surname)
+            )
+        ), Times.Once);
+    }
 }
