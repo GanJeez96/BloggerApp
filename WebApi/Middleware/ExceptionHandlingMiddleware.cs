@@ -1,3 +1,4 @@
+using Application.Exceptions;
 using FluentValidation;
 
 namespace WebApi.Middleware;
@@ -18,7 +19,7 @@ public class ExceptionHandlingMiddleware(RequestDelegate next)
                 Errors = ex.Errors.Select(e => new { e.PropertyName, e.ErrorMessage })
             });
         }
-        catch (UnauthorizedAccessException)
+        catch (AuthorNotFoundException)
         {
             context.Response.StatusCode = StatusCodes.Status403Forbidden;
         }
