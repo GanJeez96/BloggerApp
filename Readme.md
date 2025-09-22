@@ -15,6 +15,7 @@ docker compose up -d
 ```
 dotnet run
 ```
+Use the API key specified in `appsettings.Development.json` to send requests.
 
 ## Running Tests
 1. Navigate to the root folder `\BloggerApp`
