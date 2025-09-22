@@ -1,51 +1,23 @@
-using Application.Behaviors;
-using Application.Commands;
-using Application.Validators;
-using Domain.Repositories;
-using FluentValidation;
-using Infrastructure.Persistence;
-using Infrastructure.Persistence.Dapper;
-using MediatR;
-using Microsoft.AspNetCore.Authentication;
+using Application;
+using Infrastructure;
+using WebApi;
 using WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Setup MySql
-builder.Services.AddScoped<IDapperExecutor, DapperExecutor>();
+builder.Services.AddApplication();
+
 var connectionString = builder.Configuration.GetConnectionString("MySql");
-builder.Services.AddScoped<IMySqlConnectionFactory>(_ => new MySqlConnectionFactory(connectionString));
+builder.Services.AddInfrastructure(connectionString);
 
-
-// Register Swagger services
-builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen(c =>
-{
-    c.SwaggerDoc("v1", new() { Title = "Blogger API", Version = "v1" });
-});
-
-// Inject MediatR
-builder.Services.AddMediatR(cfg =>
-    cfg.RegisterServicesFromAssemblyContaining<CreatePostCommand>());
-
-// Inject Repositories
-builder.Services.AddScoped<IPostRepository, PostRepository>();
-builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
-
-// Inject FluentValidation
-builder.Services.AddValidatorsFromAssemblyContaining<CreatePostCommandValidator>();
-builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
+builder.Services.AddApiServices();
 
 builder.Services.AddControllers().AddXmlSerializerFormatters();
 
-builder.Services
-    .AddAuthentication(ApiKeyDefaults.AuthenticationScheme)
-    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
-        ApiKeyDefaults.AuthenticationScheme, options => { });
+builder.Services.AddSwagger();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
@@ -55,8 +27,6 @@ if (app.Environment.IsDevelopment())
 app.UseMiddleware<ExceptionHandlingMiddleware>();
 
 app.UseHttpsRedirection();
-
-app.UseAuthorization();
 
 app.MapControllers();
 
