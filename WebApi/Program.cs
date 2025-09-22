@@ -6,6 +6,7 @@ using FluentValidation;
 using Infrastructure.Persistence;
 using Infrastructure.Persistence.Dapper;
 using MediatR;
+using Microsoft.AspNetCore.Authentication;
 using WebApi.Middleware;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -35,7 +36,12 @@ builder.Services.AddScoped<IAuthorRepository, AuthorRepository>();
 builder.Services.AddValidatorsFromAssemblyContaining<CreatePostCommandValidator>();
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
 
-builder.Services.AddControllers().AddXmlSerializerFormatters(); 
+builder.Services.AddControllers().AddXmlSerializerFormatters();
+
+builder.Services
+    .AddAuthentication(ApiKeyDefaults.AuthenticationScheme)
+    .AddScheme<AuthenticationSchemeOptions, ApiKeyAuthenticationHandler>(
+        ApiKeyDefaults.AuthenticationScheme, options => { });
 
 var app = builder.Build();
 

@@ -1,11 +1,13 @@
 using Application.Commands;
 using Application.Queries;
 using MediatR;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace WebApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("posts")]
 public class PostController(IMediator mediator) : ControllerBase
 {

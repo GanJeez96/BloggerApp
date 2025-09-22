@@ -34,6 +34,7 @@ public class PostControllerTests
         
         result.Should().BeOfType<OkObjectResult>();
         result.As<OkObjectResult>().Value.Should().Be(expectedNewPostId);
+        _mediatorMock.Verify(m => m.Send(command, It.IsAny<CancellationToken>()), Times.Once);
     }
     
     [Theory]

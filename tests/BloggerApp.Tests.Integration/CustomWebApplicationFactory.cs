@@ -12,6 +12,8 @@ public class CustomWebApplicationFactory : WebApplicationFactory<Program>
 
     protected override void ConfigureWebHost(IWebHostBuilder builder)
     {
+        builder.UseEnvironment("Integration");
+        
         builder.ConfigureServices(services =>
         {
             services.RemoveAll(typeof(IMySqlConnectionFactory));

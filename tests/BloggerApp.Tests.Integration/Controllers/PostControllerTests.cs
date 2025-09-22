@@ -2,7 +2,6 @@ using System.Net;
 using System.Net.Http.Json;
 using System.Text;
 using System.Text.Json;
-using System.Xml;
 using System.Xml.Serialization;
 using Application.Commands;
 using Application.Dtos;
@@ -13,9 +12,32 @@ using Xunit;
 
 namespace BloggerApp.Tests.Integration.Controllers;
 
-public class PostEndpointsTests(DataStoreFixture dataStoreFixture, CustomWebApplicationFactory factory)
+public class PostControllerTests(DataStoreFixture dataStoreFixture, CustomWebApplicationFactory factory)
     : TestBase(dataStoreFixture, factory)
 {
+    #region Create post tests
+    
+    [Fact]
+    public async Task Create_WithInvalidApiKey_ShouldReturn401Unauthorized()
+    {
+        var apiPath = "/posts";
+
+        var request = new
+        {
+            AuthorId = 125,
+            Title = "Test Title",
+            Description = "Test Description",
+            Content = "Test Content"
+        };
+
+        var content = CreateJsonHttpContent(request);
+
+        Client.DefaultRequestHeaders.Remove(ApiKeyHeader);
+        
+        var response = await Client.PostAsync(apiPath, content);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
+    }
+    
     [Fact]
     public async Task Create_WithValidRequest_ShouldReturn200Ok_Json()
     {
@@ -83,6 +105,23 @@ public class PostEndpointsTests(DataStoreFixture dataStoreFixture, CustomWebAppl
         var response = await Client.PostAsync(apiPath, content);
 
         response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+    }
+    
+    #endregion
+
+    #region GetById Tests
+    
+    [Fact]
+    public async Task GetById_WithInvalidApiKey_ShouldReturn401Unauthorized()
+    {
+        var postId = 1;
+        var includeAuthor = false;
+        var apiPath = $"/posts/{postId}?includeAuthor={includeAuthor}";
+
+        Client.DefaultRequestHeaders.Remove(ApiKeyHeader);
+        
+        var response = await Client.GetAsync(apiPath);
+        response.StatusCode.Should().Be(HttpStatusCode.Unauthorized);
     }
 
     [Fact]
@@ -269,38 +308,5 @@ public class PostEndpointsTests(DataStoreFixture dataStoreFixture, CustomWebAppl
         responseContent?.Author?.Surname.Should().Be(existingAuthor.Surname);
     }
     
-
-    #region Private Methods
-
-    private StringContent CreateJsonHttpContent(object request)
-    {
-        var json = JsonSerializer.Serialize(request, JsonSerializerOptions);
-        return new StringContent(json, Encoding.UTF8, "application/json");
-    }
-
-    private StringContent CreateXmlHttpContent(object request)
-    {
-        var serializer = new XmlSerializer(request.GetType());
-        string xml;
-        
-        var settings = new XmlWriterSettings
-        {
-            Encoding = new UTF8Encoding(false),
-            Indent = true,
-            OmitXmlDeclaration = true
-        };
-        
-        using (var memoryStream = new MemoryStream())
-        using (var xmlWriter = XmlWriter.Create(memoryStream, settings))
-        {
-            serializer.Serialize(xmlWriter, request);
-            xmlWriter.Flush();
-
-            xml = Encoding.UTF8.GetString(memoryStream.ToArray());
-        }
-        
-        return new StringContent(xml, Encoding.UTF8, "application/xml");
-    }
-
     #endregion
 }
