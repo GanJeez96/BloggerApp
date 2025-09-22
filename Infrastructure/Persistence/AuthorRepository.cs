@@ -18,7 +18,7 @@ public class AuthorRepository(IMySqlConnectionFactory connectionFactory, IDapper
         return newAuthorId;
     }
 
-    public async Task<Author> GetByIdAsync(long id)
+    public async Task<Author?> GetByIdAsync(long id)
     {
         var parameters = new
         {
