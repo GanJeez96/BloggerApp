@@ -21,6 +21,7 @@ services:
       --character-set-server=utf8mb4
       --collation-server=utf8mb4_0900_ai_ci
       --log-bin-trust-function-creators=1
+  
   blogger-app-flyway:
     container_name: blogger-app-flyway
     image: flyway/flyway:latest
@@ -33,8 +34,29 @@ services:
     depends_on:
       blogger-app-mysql:
         condition: service_healthy
+  
+  blogger-app-api:
+    build:
+      context: .
+      dockerfile: WebApi/Dockerfile
+    container_name: blogger-app-api
+    depends_on:
+      blogger-app-mysql:
+        condition: service_healthy
+      blogger-app-flyway:
+        condition: service_completed_successfully
+    ports:
+      - "8080:8080"
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__MySql: "Server=blogger-app-mysql;Database=bloggerappdb;User=app_user;Password=secretpassword;"
+      APIKEY: "super-secret-key"
+    networks:
+      - privatenetwork
+        
 networks:
   privatenetwork:
     name: blogger-app-network
+
 volumes:
   mysql_data:
